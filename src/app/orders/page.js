@@ -3,7 +3,7 @@
 import Link from "next/link";
 import useSWR from "swr";
 import fetcher from "@/lib/fetcher";
-
+import RequireAuth from "@/components/RequireAuth";
 export default function OrdersPage() {
   const {
     data: orders = [],
@@ -14,6 +14,7 @@ export default function OrdersPage() {
 
   if (isLoading) {
     return (
+      <RequireAuth>
       <main className="min-h-screen bg-gray-50 px-4 py-10">
         <div className="mx-auto max-w-6xl">
           <div className="mb-10">
@@ -35,11 +36,13 @@ export default function OrdersPage() {
           </div>
         </div>
       </main>
+      </RequireAuth>
     );
   }
 
   if (error) {
     return (
+      <RequireAuth>
       <main className="min-h-screen bg-gray-50 px-4 py-10">
         <div className="mx-auto max-w-6xl">
           <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center">
@@ -62,10 +65,12 @@ export default function OrdersPage() {
           </div>
         </div>
       </main>
+      </RequireAuth>
     );
   }
 
   return (
+    <RequireAuth>
     <main className="min-h-screen bg-gray-50 px-4 py-10">
       <div className="mx-auto max-w-6xl">
         {/* Header */}
@@ -238,5 +243,6 @@ export default function OrdersPage() {
         )}
       </div>
     </main>
+    </RequireAuth>
   );
 }

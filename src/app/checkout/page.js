@@ -1,5 +1,5 @@
 import CheckoutForm from "./CheckoutForm";
-
+import RequireAuth from "@/components/RequireAuth";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +10,7 @@ export const metadata = {
 
 export default function CheckoutPage() {
   return (
+    <RequireAuth>
   <main className="mx-auto max-w-3xl px-6 py-12">
     <div className="mb-8 text-center">
       <p className="mb-2 text-sm font-semibold tracking-widest text-[#ff6f61]">
@@ -24,5 +25,6 @@ export default function CheckoutPage() {
       <CheckoutForm />
     </div>
   </main>
+  </RequireAuth>
 );
 }
