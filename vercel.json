@@ -1,0 +1,46 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "addis_eats": {
+      "root": "module-03-react-nextjs/days/Addis_Eats",
+      "framework": "vite"
+    },
+    "day_28": {
+      "root": "module-03-react-nextjs/days/Day_28",
+      "framework": "vite"
+    },
+    "day_29": {
+      "root": "module-03-react-nextjs/days/Day_29",
+      "framework": "vite"
+    },
+    "day_30": {
+      "root": "module-03-react-nextjs/days/Day_30",
+      "framework": "vite"
+    },
+    "day_31": {
+      "root": "module-03-react-nextjs/days/Day_31",
+      "framework": "vite"
+    },
+    "day_32": {
+      "root": "module-03-react-nextjs/days/Day_32",
+      "framework": "vite"
+    },
+    "day_33": {
+      "root": "module-03-react-nextjs/days/Day_33",
+      "framework": "vite"
+    },
+    "day_34": {
+      "root": "module-03-react-nextjs/days/Day_34",
+      "framework": "vite"
+    },
+    "day_40": {
+      "root": "module-03-react-nextjs/days/Day_40",
+      "framework": "nextjs"
+    },
+    "addis-eats": {
+      "root": "module-03-react-nextjs/mini-projects/addis-eats",
+      "framework": "vite"
+    }
+  },
+  "rewrites": []
+}
