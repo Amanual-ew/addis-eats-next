@@ -30,7 +30,7 @@ const CUSTOMER_LINKS = [
 
 const STAFF_LINKS = [
   { href: "/orders", label: "Orders" },
-  { href: "/dashboard", label: "Dashboard" },
+  
 ];
 
 export default function Header() {
