@@ -1,46 +1,45 @@
-export default function Loading() {
-  return (
-    <div className="menu-loading">
+export default function MenuLoading() {
+return ( <div className="mx-auto max-w-7xl animate-pulse px-4 py-8">
+{/* Heading */} <div className="mb-8"> <div className="h-8 w-40 rounded-lg bg-gray-200" /> <div className="mt-3 h-4 w-64 rounded bg-gray-200" /> </div>
 
-      <h1 className="skeleton-title"></h1>
+```
+  {/* Category placeholders */}
+  <div className="mb-8 flex gap-3 overflow-hidden">
+    {[1, 2, 3, 4, 5].map((item) => (
+      <div
+        key={item}
+        className="h-10 w-24 shrink-0 rounded-full bg-gray-200"
+      />
+    ))}
+  </div>
 
-      <div className="skeleton-categories">
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
+  {/* Dish cards */}
+  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    {Array.from({ length: 8 }).map((_, index) => (
+      <div
+        key={index}
+        className="overflow-hidden rounded-2xl border border-gray-200 bg-white p-3"
+      >
+        {/* Image */}
+        <div className="h-44 rounded-xl bg-gray-200" />
 
-      <div className="skeleton-grid">
-        <div className="skeleton-card">
-          <div className="skeleton-image"></div>
-          <div className="skeleton-text"></div>
-          <div className="skeleton-small"></div>
-          <div className="skeleton-button"></div>
-        </div>
+        {/* Dish name */}
+        <div className="mt-4 h-5 w-3/4 rounded bg-gray-200" />
 
-        <div className="skeleton-card">
-          <div className="skeleton-image"></div>
-          <div className="skeleton-text"></div>
-          <div className="skeleton-small"></div>
-          <div className="skeleton-button"></div>
-        </div>
+        {/* Description */}
+        <div className="mt-3 h-3 w-full rounded bg-gray-200" />
+        <div className="mt-2 h-3 w-2/3 rounded bg-gray-200" />
 
-        <div className="skeleton-card">
-          <div className="skeleton-image"></div>
-          <div className="skeleton-text"></div>
-          <div className="skeleton-small"></div>
-          <div className="skeleton-button"></div>
-        </div>
-
-        <div className="skeleton-card">
-          <div className="skeleton-image"></div>
-          <div className="skeleton-text"></div>
-          <div className="skeleton-small"></div>
-          <div className="skeleton-button"></div>
+        {/* Price and button */}
+        <div className="mt-5 flex items-center justify-between">
+          <div className="h-6 w-20 rounded bg-gray-200" />
+          <div className="h-9 w-24 rounded-lg bg-gray-200" />
         </div>
       </div>
+    ))}
+  </div>
+</div>
 
-    </div>
-  );
+
+);
 }
