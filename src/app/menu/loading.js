@@ -1,45 +1,31 @@
-export default function MenuLoading() {
-return ( <div className="mx-auto max-w-7xl animate-pulse px-4 py-8">
-{/* Heading */} <div className="mb-8"> <div className="h-8 w-40 rounded-lg bg-gray-200" /> <div className="mt-3 h-4 w-64 rounded bg-gray-200" /> </div>
 
-```
-  {/* Category placeholders */}
-  <div className="mb-8 flex gap-3 overflow-hidden">
-    {[1, 2, 3, 4, 5].map((item) => (
-      <div
-        key={item}
-        className="h-10 w-24 shrink-0 rounded-full bg-gray-200"
-      />
-    ))}
-  </div>
+export default function Loading() {
+  return (
+    <div
+      className="mx-auto max-w-6xl px-4 py-6"
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+    >
+      <span className="sr-only">Loading...</span>
 
-  {/* Dish cards */}
-  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-    {Array.from({ length: 8 }).map((_, index) => (
-      <div
-        key={index}
-        className="overflow-hidden rounded-2xl border border-gray-200 bg-white p-3"
-      >
-        {/* Image */}
-        <div className="h-44 rounded-xl bg-gray-200" />
+      {/* Page title */}
+      <div className="h-8 w-48 animate-pulse rounded-lg bg-gray-200 dark:bg-gray-700" />
 
-        {/* Dish name */}
-        <div className="mt-4 h-5 w-3/4 rounded bg-gray-200" />
-
-        {/* Description */}
-        <div className="mt-3 h-3 w-full rounded bg-gray-200" />
-        <div className="mt-2 h-3 w-2/3 rounded bg-gray-200" />
-
-        {/* Price and button */}
-        <div className="mt-5 flex items-center justify-between">
-          <div className="h-6 w-20 rounded bg-gray-200" />
-          <div className="h-9 w-24 rounded-lg bg-gray-200" />
-        </div>
+      {/* Card grid */}
+      <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div
+            key={i}
+            className="rounded-xl border border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-gray-900"
+          >
+            <div className="mb-3 h-36 w-full animate-pulse rounded-lg bg-gray-200 dark:bg-gray-700" />
+            <div className="mb-2 h-3.5 w-full animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+            <div className="h-3.5 w-3/5 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+            <div className="mt-3 h-9 w-full animate-pulse rounded-lg bg-gray-200 dark:bg-gray-700" />
+          </div>
+        ))}
       </div>
-    ))}
-  </div>
-</div>
-
-
-);
+    </div>
+  );
 }
