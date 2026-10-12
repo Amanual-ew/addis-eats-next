@@ -33,7 +33,7 @@ export async function generateMetadata({ params }) {
       description,
       images: [
         {
-          url: `/menu/${dish.slug}/opengraph-image`, // Exercise 4 file convention
+          url: dish.image, // Exercise 4 file convention
           width: 1200,
           height: 630,
           alt: `${dish.name} – ${dish.price} ETB`,
