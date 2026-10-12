@@ -13,21 +13,29 @@ export const metadata = {
 export default async function OrderPage({ params }) {
   const { id } = await params;
 
-  // Layer 2: verify the session while rendering.
+  // Verify the session while rendering (don't rely on middleware alone).
   const session = await getSession();
 
   if (!session) {
-    redirect(`/signin?next=/orders/${id}`);
+    // Encode the whole return path so characters in `id` (&, ?, #, etc.)
+    // can't alter the query string or redirect target.
+    redirect(`/signin?next=${encodeURIComponent(`/orders/${id}`)}`);
   }
 
   // Normalize IDs to strings so number/string mismatch can't cause false negatives.
   const order = orders.find((item) => String(item.id) === String(id));
 
-  // Support both `session.id` and `session.userId` shapes so a naming
-  // mismatch doesn't silently break the ownership check.
+  // Support both `session.id` and `session.userId` shapes.
   const sessionUserId = session.id ?? session.userId;
 
-  const isOwner = order && String(order.userId) === String(sessionUserId);
+  // Fail closed: if either side has no user id, nobody "owns" the order.
+  // Without this, String(undefined) === String(undefined) would grant access.
+  const isOwner =
+    order != null &&
+    sessionUserId != null &&
+    order.userId != null &&
+    String(order.userId) === String(sessionUserId);
+
   const isStaff = session.role === "staff" || session.role === "admin";
 
   // Someone else's order must look identical to a missing one (no info leak).
@@ -35,5 +43,5 @@ export default async function OrderPage({ params }) {
     notFound();
   }
 
-  return <OrderDetails orderId={id} initialOrder={order} />;
+  return <OrderDetails orderId={String(order.id)} initialOrder={order} />;
 }
