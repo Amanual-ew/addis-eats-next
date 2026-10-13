@@ -1,8 +1,7 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
-/node_modules
-/.pnp
+# Dependencies
+node_modules/
+.pnp
 .pnp.*
 .yarn/*
 !.yarn/patches
@@ -10,35 +9,41 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
+# Next.js
+.next/
+out/
+build/
+dist/
 
-# next.js
-/.next/
-/out/
+# Testing
+coverage/
 
-# production
-/build
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
 
-# misc
-.DS_Store
-*.pem
+# Vercel
+.vercel/
 
-# debug
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+*.log
 
-# env files
-.env
-.env.local
-.env*.local
-!.env.example
-
-# vercel
-.vercel
-
-# typescript
+# TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# Editor and operating system
+.vscode/
+.DS_Store
+*.pem
+
+# Application data
+/data/
+
+# Large course archive
+/module-03-react-nextjs/days/Day_43.zip

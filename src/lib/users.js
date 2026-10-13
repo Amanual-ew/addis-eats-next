@@ -15,7 +15,7 @@ if (!g.__users) {
     },
     {
       id: "usr_2",
-      name: "Kitchen Staff",
+      name: "Admin Staff",
       phone: "0911000000",
       role: "staff",
       passwordHash: bcrypt.hashSync("staff123", 10),

@@ -1,32 +1,39 @@
+
 import { orderSchema } from "@/lib/validation";
-import { orders } from "@/lib/orders";
+import { orders, createOrder } from "@/lib/orders";
 import { getSession } from "@/lib/session";
 
-// Customers only ever receive THEIR OWN orders.
-// The filter uses the session's id, never an id from the request.
+// Customers can only see their own orders.
 export async function GET() {
   const session = await getSession();
 
   if (!session) {
-    return Response.json({ message: "Not signed in." }, { status: 401 }); // 401
+    return Response.json(
+      { message: "Not signed in." },
+      { status: 401 }
+    );
   }
 
-  const mine = orders.filter((order) => order.userId === session.id);
+  const mine = orders.filter(
+    (order) => order.userId === session.id
+  );
 
   return Response.json(mine);
 }
 
+// Create a new order.
 export async function POST(request) {
-  // The real check is here, at the write.
   const session = await getSession();
 
   if (!session) {
-    return Response.json({ message: "Please sign in to place an order." }, { status: 401 });
+    return Response.json(
+      { message: "Please sign in to place an order." },
+      { status: 401 }
+    );
   }
 
   try {
     const body = await request.json();
-
     const result = orderSchema.safeParse(body);
 
     if (!result.success) {
@@ -51,18 +58,14 @@ export async function POST(request) {
 
     const { name, phone, area, items } = result.data;
 
-    const newOrder = {
-      id: Date.now(),
-      userId: session.id, // from the session, never from the request body
+    // Use the shared function to calculate and save the order total.
+    const newOrder = createOrder({
+      userId: session.id,
       name,
       phone,
       area,
       items,
-      status: "Pending",
-      createdAt: new Date().toISOString(),
-    };
-
-    orders.push(newOrder);
+    });
 
     return Response.json(
       {
@@ -75,10 +78,9 @@ export async function POST(request) {
     console.error("Order API error:", error);
 
     return Response.json(
-      {
-        message: "Invalid request.",
-      },
+      { message: "Invalid request." },
       { status: 400 }
     );
   }
 }
+

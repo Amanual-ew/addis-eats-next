@@ -1,21 +1,26 @@
+// DishCard.jsx  (REPLACE) - same design, faster image loading
 import Image from "next/image";
 import Link from "next/link";
 import AddToCartButton from "./AddToCartButton";
 
 const etb = new Intl.NumberFormat("en-ET", { style: "currency", currency: "ETB" });
 
-export default function DishCard({ dish }) {
+// `priority` should be true only for the first 2-3 cards visible on load.
+export default function DishCard({ dish, priority = false }) {
   return (
     <article className="group flex flex-col overflow-hidden rounded-3xl border border-orange-100 bg-white shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-xl">
       <div className="relative overflow-hidden">
         <Image
           src={dish.image}
-          alt={`${dish.name}, ${dish.description}`}
-          width={300}
-          height={200}
-          sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+          alt={dish.name}
+          // width/height only set the aspect ratio (3:2); the real size comes from `sizes`.
+          width={600}
+          height={400}
+          // Match your real grid: 1 column on phones, 2 on tablets, 3 on desktop,
+          // and cards never grow past ~380px inside a max-w-6xl container.
+          sizes="(min-width: 1152px) 380px, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+          priority={priority}
           className="h-52 w-full object-cover transition duration-500 group-hover:scale-110"
-          loading="eager"
         />
 
         <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-[#ff6f61] backdrop-blur">

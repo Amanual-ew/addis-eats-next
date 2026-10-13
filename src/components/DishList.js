@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import DishCard from "./DishCard";
 
-
 const fetcher = (url) =>
   fetch(url).then((res) => res.json());
 

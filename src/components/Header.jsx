@@ -4,14 +4,14 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
-
+import {  useCart } from "./CartProvider";
 const fetcher = async (url) => {
   const response = await fetch(url, {
     credentials: "include",
     cache: "no-store",
     headers: { Accept: "application/json" },
   });
-
+  
   if (response.status === 401) {
     return { user: null };
   }
@@ -23,20 +23,14 @@ const fetcher = async (url) => {
   return response.json();
 };
 
-const CUSTOMER_LINKS = [
-  { href: "/", label: "Home" },
-  { href: "/menu", label: "Menu" },
-];
-
-const STAFF_LINKS = [
-  { href: "/kitchen", label: "Orders" },
-];
-
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const { mutate } = useSWRConfig();
-
+  const {
+    cart
+  } = useCart();
+  const count = cart.map((item) => item.quantity).reduce((sum, q) => sum + q, 0);
   // Only fetch + render auth UI after mount so SSR and first paint match
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -52,12 +46,9 @@ export default function Header() {
       shouldRetryOnError: false,
     }
   );
-
+  
   const user = error ? null : data?.user;
   const isStaff = user?.role === "staff";
-
-  // Staff only see Orders + Dashboard; everyone else sees Home + Menu (+ Cart)
-  const navItems = isStaff ? STAFF_LINKS : CUSTOMER_LINKS;
 
   // Close mobile menu + desktop dropdown whenever the route changes
   useEffect(() => {
@@ -109,20 +100,16 @@ export default function Header() {
     router.refresh();
   }
 
-  // "/" only matches exactly; other links also match sub-pages like /orders/123
-  const isActive = (href) =>
-    href === "/" ? pathname === "/" : pathname.startsWith(href);
-
   const navLink = (href) =>
     `px-4 py-2 transition-colors duration-200 ${
-      isActive(href)
+      pathname === href
         ? "text-[#ff6f61]"
         : "text-gray-600 hover:text-[#ff6f61]"
     }`;
 
   const mobileLink = (href) =>
     `block rounded-lg px-4 py-3 text-base font-semibold transition-colors ${
-      isActive(href)
+      pathname === href
         ? "bg-orange-50 text-[#ff6f61]"
         : "text-gray-700 hover:bg-orange-50 hover:text-[#ff6f61]"
     }`;
@@ -130,8 +117,12 @@ export default function Header() {
   const dropdownItem =
     "block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-[#ff6f61]";
 
-  // Extra account links (customers only; staff already have theirs in the main nav)
-  const accountLinks = isStaff ? [] : [{ href: "/orders", label: "📦 My Orders" }];
+  // Role-based account links, shared by desktop dropdown + mobile panel
+  const accountLinks = [
+    !isStaff && { href: "/orders", label: "📦 My Orders" },
+    isStaff && { href: "/dashboard", label: "📊 Dashboard" },
+    isStaff && { href: "/kitchen", label: "👨‍🍳 Kitchen" },
+  ].filter(Boolean);
 
   return (
     <header className="sticky top-0 z-50 border-b border-orange-100 bg-white/90 backdrop-blur-md">
@@ -148,20 +139,29 @@ export default function Header() {
 
         {/* Desktop nav */}
         <div className="hidden items-center gap-0.5 text-sm font-semibold md:flex">
-          {navItems.map((l) => (
-            <Link key={l.href} href={l.href} className={navLink(l.href)}>
-              {l.label}
-            </Link>
-          ))}
+          <Link href="/" className={navLink("/")}>
+            Home
+          </Link>
+          <Link href="/menu" className={navLink("/menu")}>
+            Menu
+          </Link>
 
-          {!isStaff && (
-            <Link
-              href="/cart"
-              className="ml-2 rounded-full bg-gradient-to-r from-[#ff6f61] to-orange-400 px-5 py-2 text-white shadow-md shadow-orange-200 transition hover:scale-105 hover:shadow-lg"
-            >
-              Cart
-            </Link>
+          <Link
+          href="/cart"
+          aria-label={`Cart, ${count} items`}
+          className="group relative ml-2 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#ff6f61] to-orange-400 px-5 py-2 font-semibold text-white shadow-md shadow-orange-200 ring-1 ring-white/20 transition duration-200 hover:scale-105 hover:shadow-lg hover:shadow-orange-300 active:scale-95"
+        >
+          <span className="text-base leading-none transition-transform group-hover:-rotate-12">
+            🛒
+          </span>
+          <span>Cart</span>
+
+          {count > 0 && (
+            <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1.5 text-[11px] font-bold tabular-nums text-[#ff6f61] shadow ring-2 ring-[#ff6f61]">
+              {count > 99 ? "99+" : count}
+            </span>
           )}
+        </Link>
 
           {!mounted ? (
             <div className="ml-3 h-10 w-24" />
@@ -191,9 +191,7 @@ export default function Header() {
                   </Link>
                 ))}
 
-                {accountLinks.length > 0 && (
-                  <div className="my-1 border-t border-gray-100" />
-                )}
+                <div className="my-1 border-t border-gray-100" />
 
                 <button
                   onClick={handleSignOut}
@@ -223,14 +221,23 @@ export default function Header() {
 
         {/* Mobile: cart + hamburger */}
         <div className="flex items-center gap-2 md:hidden">
-          {!isStaff && (
-            <Link
-              href="/cart"
-              className="rounded-full bg-gradient-to-r from-[#ff6f61] to-orange-400 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-orange-200 active:scale-95"
-            >
-              Cart
-            </Link>
-          )}
+          <Link
+            href="/cart"
+            aria-label={`Cart, ${count} items`}
+            className="group relative ml-2 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#ff6f61] to-orange-400 px-5 py-2 font-semibold text-white shadow-md shadow-orange-200 ring-1 ring-white/20 transition duration-200 hover:scale-105 hover:shadow-lg hover:shadow-orange-300 active:scale-95"
+           >
+            <span className="text-base leading-none transition-transform group-hover:-rotate-12">
+              🛒
+            </span>
+            <span>Cart</span>
+
+            {count > 0 && (
+              <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1.5 text-[11px] font-bold tabular-nums text-[#ff6f61] shadow ring-2 ring-[#ff6f61]">
+                {count > 99 ? "99+" : count}
+              </span>
+            )}
+          </Link>
+
 
           <button
             type="button"
@@ -264,11 +271,12 @@ export default function Header() {
         id="mobile-menu"
         className={`md:hidden ${menuOpen ? "block" : "hidden"} max-h-[calc(100vh-4rem)] overflow-y-auto border-t border-orange-100 bg-white px-4 pb-4 pt-2 shadow-lg`}
       >
-        {navItems.map((l) => (
-          <Link key={l.href} href={l.href} className={mobileLink(l.href)}>
-            {l.label}
-          </Link>
-        ))}
+        <Link href="/" className={mobileLink("/")}>
+          Home
+        </Link>
+        <Link href="/menu" className={mobileLink("/menu")}>
+          Menu
+        </Link>
 
         <div className="my-2 border-t border-gray-100" />
 

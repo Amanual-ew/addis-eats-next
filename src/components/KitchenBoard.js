@@ -1,18 +1,38 @@
+// src/components/KitchenBoard.jsx  (REPLACE)
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-
-const STATUSES = ["Pending", "Preparing", "On the way", "Delivered", "Cancelled"];
+import { STATUSES, normalizeStatus } from "@/lib/orderStatus";
 
 export default function KitchenBoard({ orders }) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [savingId, setSavingId] = useState(null);
+  // Shows the chosen status immediately, until the refreshed data arrives.
+  const [overrides, setOverrides] = useState({});
+
+  // Fresh data from the server arrived: drop the temporary overrides.
+  useEffect(() => {
+    setOverrides({});
+  }, [orders]);
+
+  // Keep the board in sync with changes made elsewhere (every 3s, only while visible).
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (savingId === null && document.visibilityState === "visible") {
+        router.refresh();
+      }
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [router, savingId]);
+
+  const statusOf = (order) => overrides[order.id] ?? normalizeStatus(order.status);
 
   async function changeStatus(id, status) {
     setError("");
     setSavingId(id);
+    setOverrides((o) => ({ ...o, [id]: status }));
 
     try {
       const response = await fetch(`/api/orders/${id}`, {
@@ -24,12 +44,20 @@ export default function KitchenBoard({ orders }) {
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
         setError(data.message || "Could not update the order.");
+        setOverrides((o) => {
+          const { [id]: _removed, ...rest } = o;
+          return rest;
+        });
         return;
       }
 
       router.refresh();
     } catch {
       setError("Could not connect to the server.");
+      setOverrides((o) => {
+        const { [id]: _removed, ...rest } = o;
+        return rest;
+      });
     } finally {
       setSavingId(null);
     }
@@ -78,9 +106,10 @@ export default function KitchenBoard({ orders }) {
             </div>
 
             <select
-              value={order.status}
+              value={statusOf(order)}
               disabled={savingId === order.id}
               onChange={(e) => changeStatus(order.id, e.target.value)}
+              aria-label={`Status for order ${order.id}`}
               className="rounded-xl border border-gray-300 bg-white px-4 py-2 font-medium outline-none transition focus:border-[#ff6f61] focus:ring-2 focus:ring-orange-200 disabled:opacity-50"
             >
               {STATUSES.map((status) => (

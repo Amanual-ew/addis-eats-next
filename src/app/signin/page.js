@@ -1,4 +1,4 @@
-// app/signin/page.js
+// src/app/signin/page.js  (REPLACE)
 "use client";
 
 import { useState } from "react";
@@ -10,6 +10,31 @@ function fieldClass(hasError) {
       ? "border-red-400 focus:ring-red-100"
       : "border-gray-300 focus:border-[#ff6f61] focus:ring-orange-200"
   }`;
+}
+
+// Where to go after signing in:
+//  1. the page that sent them here (?next=/kitchen), if it's a path on this site
+//  2. otherwise staff -> /dashboard, customers -> /menu
+async function getDestination(data) {
+  const next = new URLSearchParams(window.location.search).get("next");
+  if (next && next.startsWith("/") && !next.startsWith("//")) return next;
+
+  // Use the role from the sign-in response, or ask the server who is signed in.
+  let role = data?.user?.role;
+  if (!role) {
+    try {
+      const res = await fetch("/api/auth/me", {
+        credentials: "include",
+        cache: "no-store",
+        headers: { Accept: "application/json" },
+      });
+      role = (await res.json())?.user?.role;
+    } catch {
+      // fall through to the customer default
+    }
+  }
+
+  return role === "staff" ? "/dashboard" : "/menu";
 }
 
 export default function SignInPage() {
@@ -50,8 +75,10 @@ export default function SignInPage() {
       return;
     }
 
+    const destination = await getDestination(data);
+
     // Hard navigation so the session cookie is committed before the next request.
-    window.location.assign("/kitchen");
+    window.location.assign(destination);
   }
 
   const hasFieldErrors = Object.keys(fieldErrors).length > 0;

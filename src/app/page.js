@@ -49,8 +49,8 @@ export default function Home() {
           {/* Image container */}
           <div className="relative overflow-hidden rounded-3xl border border-orange-100 bg-white p-2 shadow-2xl shadow-orange-200/50">
             <Image
-              src="/images/doro-wot.webp"
-              alt="Doro Wot"
+              src="/images/logo.png"
+              alt="Beyaynet - Traditional Ethiopian fast food served with injera."
               width={1200}
               height={800}
               loading="eager"

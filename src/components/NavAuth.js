@@ -41,10 +41,10 @@ export default function NavAuth() {
           API refuse non-staff on the server. */}
       {user.role === "staff" && (
         <Link
-          href="/kitchen"
+          href="/dashboard"
           className="rounded-full px-4 py-2 transition hover:bg-orange-50 hover:text-[#ff6f61]"
         >
-          👨‍🍳 Kitchen
+          Admin
         </Link>
       )}
 

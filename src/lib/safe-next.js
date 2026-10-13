@@ -1,3 +1,9 @@
+// Only allows same-origin relative paths.
+// Blocks:
+//   - absolute URLs:         https://evil.com
+//   - protocol-relative:     //evil.com
+//   - backslash tricks:      /\evil.com
+//   - double-encoded paths:  %252Fevil.com  (decoded once, then re-checked)
 const FALLBACK = "/";
 
 export function safeNext(raw, fallback = FALLBACK) {
