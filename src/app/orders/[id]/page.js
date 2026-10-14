@@ -6,7 +6,7 @@ import { normalizeStatus } from "@/lib/orderStatus";
 import { etb, when } from "@/lib/format";
 import StatusStream from "@/app/tracking/StatusStream";
 import OrderTrackingMapWrapper from "./OrderTrackingMapWrapper";
-
+import ReqiredAuth from "@/components/RequiresAuth";
 export const dynamic = "force-dynamic";
 
 export default async function OrderPage({ params }) {
@@ -30,6 +30,7 @@ export default async function OrderPage({ params }) {
   const courier = { name: "Abebe K.", lat: 9.0192, lng: 38.7525 };
 
   return (
+    <ReqiredAuth>
     <main className="mx-auto max-w-6xl space-y-8 p-6">
       <Link href="/orders" className="text-sm font-medium text-gray-500 hover:text-gray-700">
         &larr; Back to orders
@@ -64,5 +65,6 @@ export default async function OrderPage({ params }) {
         </aside>
       </section>
     </main>
+    </ReqiredAuth>
   );
 }

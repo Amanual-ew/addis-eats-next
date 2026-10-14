@@ -1,37 +1,43 @@
-// src/lib/orders.js
+// src/lib/orders.js  (REPLACE)
 import { dishes } from "./dishes";
 
 // In-memory store, shared across routes in Next dev mode.
 // Orders are lost when the server restarts.
 // Bump KEY whenever the order shape changes so dev reseeds cleanly.
 const g = globalThis;
-const KEY = "__orders_v2";
+const KEY = "__orders_v3";
 
-const NEIGHBOURHOODS = ["Bole", "Kazanchis", "Megenagna","Ayat", "CMC", "Gerji", "Piassa", "4 Kilo", "Arabsa", "Mexico"];
-const STATUSES = ["pending", "preparing", "delivered"];
+const NEIGHBOURHOODS = ["Bole", "Kazanchis", "Megenagna", "Ayat", "CMC", "Gerji", "Piassa", "4 Kilo", "Arabsa", "Mexico"];
+
+// 5 fixed sample orders, each with a different id, area and status.
+// All belong to the customer account (usr_1) so they all show up in that user's "My Orders".
+const SEED = [
+  { id: "ord_1001", area: "Bole",      status: "Pending",    dish: 0, qty: 2, minutesAgo: 5 },
+  { id: "ord_1002", area: "Kazanchis", status: "Preparing",  dish: 1, qty: 1, minutesAgo: 30 },
+  { id: "ord_1003", area: "Megenagna", status: "On the way", dish: 2, qty: 3, minutesAgo: 60 },
+  { id: "ord_1004", area: "CMC",       status: "Delivered",  dish: 3, qty: 1, minutesAgo: 24 * 60 },
+  { id: "ord_1005", area: "Gerji",     status: "Cancelled",  dish: 4, qty: 2, minutesAgo: 2 * 24 * 60 },
+];
 
 if (!g[KEY]) {
   const now = Date.now();
-  const day = 24 * 60 * 60 * 1000;
-  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const minute = 60 * 1000;
 
-  g[KEY] = Array.from({ length: 24 }, (_, i) => {
-    const dish = dishes[i % 6];
-    const qty = 1 + (i % 3);
+  g[KEY] = SEED.map((s) => {
+    const dish = dishes[s.dish % dishes.length];
     return {
-      id: `ord_${now - i * day}`,
-      userId: i % 4 === 0 ? "usr_2" : "usr_1",
-      name: i % 4 === 0 ? "Admin Staff" : "Almaz",
-      phone: i % 4 === 0 ? "0911000000" : "0912345678",
-      area: pick(NEIGHBOURHOODS),
-      status: pick(STATUSES),
-      statusUpdatedAt: null,       // ← new
-      isManualOverride: false,
+      id: s.id,
+      userId: "usr_1",
+      name: "Almaz",
+      phone: "0912345678",
+      area: s.area,
+      status: s.status,
+      statusUpdatedAt: null,
       items: [
-        { dishId: dish.id, name: dish.name, price: dish.price, quantity: qty },
+        { dishId: dish.id, name: dish.name, price: dish.price, quantity: s.qty },
       ],
-      total: dish.price * qty,
-      createdAt: new Date(now - i * day).toISOString(),
+      total: dish.price * s.qty,
+      createdAt: new Date(now - s.minutesAgo * minute).toISOString(),
     };
   });
 }
@@ -51,6 +57,7 @@ export function createOrder({ userId, name, phone, area, items }) {
     phone,
     area: NEIGHBOURHOODS.includes(area) ? area : NEIGHBOURHOODS[0],
     status: "pending",
+    statusUpdatedAt: null,
     items,
     total,
     createdAt: new Date().toISOString(),

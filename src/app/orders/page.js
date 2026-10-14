@@ -5,7 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import fetcher from "@/lib/fetcher";
-
+import ReqiredAuth from "@/components/RequiresAuth";
 // Keyed by the status with spaces/underscores/capitals removed, so
 // "pending", "Pending", "On the way", "on_the_way" and "en_route" all work.
 const STATUS_UI = {
@@ -52,6 +52,7 @@ function OrderCard({ order }) {
   const ui = statusUi(order.status);
 
   return (
+    <ReqiredAuth>
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md">
       {/* Order top */}
       <div className="border-b border-gray-100 px-4 py-3">
@@ -139,6 +140,7 @@ function OrderCard({ order }) {
         <span className="text-base font-bold">{total.toLocaleString()} ETB</span>
       </div>
     </div>
+    </ReqiredAuth>
   );
 }
 
@@ -177,6 +179,7 @@ export default function OrdersPage() {
 
   if (isLoading) {
     return (
+      <ReqiredAuth>
       <main className="min-h-screen bg-gray-50 px-4 py-6">
         <div className="mx-auto max-w-5xl">
           <div className="mb-6">
@@ -198,11 +201,13 @@ export default function OrdersPage() {
           </div>
         </div>
       </main>
+      </ReqiredAuth>
     );
   }
 
   if (error) {
     return (
+      <ReqiredAuth>
       <main className="min-h-screen bg-gray-50 px-4 py-6">
         <div className="mx-auto max-w-5xl">
           <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
@@ -225,10 +230,12 @@ export default function OrdersPage() {
           </div>
         </div>
       </main>
+      </ReqiredAuth>
     );
   }
 
   return (
+    <ReqiredAuth>
     <main className="min-h-screen bg-gray-50 px-4 py-6">
       <div className="mx-auto max-w-5xl">
         {/* Header */}
@@ -337,5 +344,6 @@ export default function OrdersPage() {
         )}
       </div>
     </main>
+    </ReqiredAuth>
   );
 }
