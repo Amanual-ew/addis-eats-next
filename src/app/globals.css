@@ -1,1 +1,50 @@
 @import "tailwindcss";
+
+@import "tailwindcss";
+
+/* Dark mode is switched by a "dark" class on <html> (see ThemeToggle.jsx),
+   which also makes the dark: prefix work in class names. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+.dark {
+  color-scheme: dark; /* dark scrollbars, inputs and form controls */
+
+  /* Neutrals: the gray scale is flipped, so every existing text-gray-*,
+     border-gray-* and bg-gray-* class switches automatically. */
+  --color-gray-50: #1a1613;
+  --color-gray-100: #26211d;
+  --color-gray-200: #373029;
+  --color-gray-300: #4b423a;
+  --color-gray-400: #9c9187;
+  --color-gray-500: #b3a9a0;
+  --color-gray-600: #c7beb6;
+  --color-gray-700: #d9d2cb;
+  --color-gray-800: #e9e4df;
+  --color-gray-900: #f7f3ef;
+
+  /* Warm tints used by pills, borders and the hero glow. */
+  --color-orange-50: #34211c;
+  --color-orange-100: #45291f;
+  --color-orange-200: #7c3a2a;
+
+  /* Status colors (badges, errors, "Available" switch). */
+  --color-red-100: #4a1d1d;
+  --color-red-600: #f87171;
+  --color-red-700: #fca5a5;
+  --color-green-100: #153a2c;
+  --color-green-800: #86efac;
+}
+
+/* White surfaces (cards, header, footer). The text-white on coral buttons
+   and red badges is left alone, so those keep white text. */
+.dark .bg-white {
+  background-color: #1c1917;
+}
+.dark .bg-white\/90 {
+  background-color: rgb(28 25 23 / 0.9);
+}
+
+/* bg-gray-900 turns light in dark mode, so its text must turn dark. */
+.dark .bg-gray-900 {
+  color: #1c1917;
+}

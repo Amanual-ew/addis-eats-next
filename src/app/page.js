@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import TodaysSpecial from "@/components/TodaysSpecial";
 
 export default function Home() {
   return (
@@ -41,8 +42,7 @@ export default function Home() {
           </div>
         </div>
 
-        
-         <div className="relative w-full max-w-xl">
+        <div className="relative w-full max-w-xl">
           {/* Decorative glow / shadow */}
           <div className="absolute inset-0 translate-x-4 translate-y-4 rounded-3xl bg-gradient-to-br from-[#ff6f61] to-orange-300 opacity-30 blur-sm" />
 
@@ -59,6 +59,10 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Today's special: hidden when no dish is marked special,
+          scrolls continuously when there are 2 or more. */}
+      <TodaysSpecial />
 
       <section className="mt-24 grid gap-6 sm:grid-cols-3">
         {[
