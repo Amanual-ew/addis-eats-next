@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-@import "tailwindcss";
-
 /* Dark mode is switched by a "dark" class on <html> (see ThemeToggle.jsx),
    which also makes the dark: prefix work in class names. */
 @custom-variant dark (&:where(.dark, .dark *));
@@ -28,6 +26,7 @@
   --color-orange-200: #7c3a2a;
 
   /* Status colors (badges, errors, "Available" switch). */
+  --color-red-50: #3b1c1c;
   --color-red-100: #4a1d1d;
   --color-red-600: #f87171;
   --color-red-700: #fca5a5;

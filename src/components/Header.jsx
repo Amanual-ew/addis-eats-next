@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import {  useCart } from "./CartProvider";
+import ThemeToggle from "./ThemeToggle";
 const fetcher = async (url) => {
   const response = await fetch(url, {
     credentials: "include",
@@ -84,6 +85,13 @@ export default function Header() {
     return () => mq.removeEventListener("change", onChange);
   }, []);
 
+  // Staff pages have their own sidebar (with theme toggle and sign out),
+  // so the public header is hidden there. Keep this below all the hooks.
+  const onStaffPage = ["/staff", "/kitchen", "/dashboard"].some((p) =>
+    pathname?.startsWith(p)
+  );
+  if (onStaffPage) return null;
+
   async function handleSignOut() {
     try {
       await fetch("/api/auth/signout", {
@@ -121,6 +129,7 @@ export default function Header() {
   const accountLinks = [
     !isStaff && { href: "/orders", label: "📦 My Orders" },
     isStaff && { href: "/dashboard", label: "📊 Dashboard" },
+    isStaff && { href: "/staff/menu", label: "🍽️ Manage menu" },
     isStaff && { href: "/kitchen", label: "👨‍🍳 Kitchen" },
   ].filter(Boolean);
 
@@ -162,6 +171,8 @@ export default function Header() {
             </span>
           )}
         </Link>
+
+          <ThemeToggle className="ml-3" />
 
           {!mounted ? (
             <div className="ml-3 h-10 w-24" />
@@ -221,6 +232,8 @@ export default function Header() {
 
         {/* Mobile: cart + hamburger */}
         <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggle />
+
           <Link
             href="/cart"
             aria-label={`Cart, ${count} items`}

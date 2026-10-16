@@ -1,9 +1,18 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { dishes } from "@/lib/dishes";
 import { requireStaff } from "@/lib/requireStaff";
 
 // Compare as strings so numeric and string ids both work.
 const findIndex = (id) => dishes.findIndex((d) => String(d.id) === String(id));
+
+// After a change, tell Next.js that every page showing dishes is out of date,
+// so no page keeps serving an older copy.
+function refreshPages() {
+  revalidatePath("/");
+  revalidatePath("/menu");
+  revalidatePath("/menu/[slug]", "page");
+}
 
 export async function PATCH(request, { params }) {
   const { error } = await requireStaff();
@@ -41,13 +50,22 @@ export async function PATCH(request, { params }) {
     patch.discount = discount;
   }
   if (typeof body.category === "string") patch.category = body.category.trim();
+  if (typeof body.description === "string") patch.description = body.description.trim();
   if (typeof body.image === "string") patch.image = body.image.trim();
   if (typeof body.available === "boolean") patch.available = body.available;
   if (typeof body.special === "boolean") patch.special = body.special;
 
   // Mutate in place so every importer of `dishes` sees the change.
   Object.assign(dishes[i], patch);
-  return NextResponse.json(dishes[i]);
+  refreshPages();
+
+  // Always send complete fields back, even for older dishes that lack them.
+  return NextResponse.json({
+    available: true,
+    discount: 0,
+    special: false,
+    ...dishes[i],
+  });
 }
 
 export async function DELETE(_request, { params }) {
@@ -59,5 +77,6 @@ export async function DELETE(_request, { params }) {
   if (i === -1) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   dishes.splice(i, 1);
+  refreshPages();
   return NextResponse.json({ ok: true });
 }

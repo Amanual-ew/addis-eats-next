@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 import { dishes } from "@/lib/dishes";
 import { discountedPrice, hasDiscount } from "@/lib/pricing";
 import AddToCartButton from "@/components/AddToCartButton";
@@ -9,10 +10,33 @@ import AddToCartButton from "@/components/AddToCartButton";
 // it froze every dish at build time, so changes would never show up here.)
 export const dynamic = "force-dynamic";
 
+// Loads the dish from /api/dishes: the same source the menu cards and the
+// staff table use, so "Sold out" and "Today's special" always match what
+// staff just saved. (Reading lib/dishes directly can give an older copy.)
+// Falls back to lib/dishes if the request fails.
+async function getDish(slug) {
+  try {
+    const h = await headers();
+    const host = h.get("x-forwarded-host") ?? h.get("host");
+    const proto = h.get("x-forwarded-proto") ?? "http";
+    const res = await fetch(`${proto}://${host}/api/dishes`, {
+      cache: "no-store",
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const list = Array.isArray(data) ? data : data?.dishes ?? [];
+      return list.find((item) => item.slug === slug) ?? null;
+    }
+  } catch {
+    // fall through to the local list
+  }
+  return dishes.find((item) => item.slug === slug) ?? null;
+}
+
 // ---------- 1. Dynamic metadata (Exercise 3) ----------
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const dish = dishes.find((item) => item.slug === slug);
+  const dish = await getDish(slug);
 
   if (!dish) {
     return { title: "Dish not found" };
@@ -46,7 +70,7 @@ export async function generateMetadata({ params }) {
 // ---------- 2. Page ----------
 export default async function DishPage({ params }) {
   const { slug } = await params;
-  const dish = dishes.find((item) => item.slug === slug);
+  const dish = await getDish(slug);
 
   if (!dish) {
     notFound();

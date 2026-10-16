@@ -1,4 +1,5 @@
 import "./globals.css";
+import Script from "next/script";
 import { Poppins  } from "next/font/google";
 import { CartProvider } from "../components/CartProvider";
 import SWRProvider from "../components/SWRProvider";
@@ -39,10 +40,32 @@ export const metadata = {
   },
 };
 
+// Runs before the page paints, so dark-mode visitors never see a white flash.
+// Uses the saved choice, or the device setting on the first visit.
+const themeScript = `
+(function () {
+  try {
+    var saved = localStorage.getItem("theme");
+    var dark = saved
+      ? saved === "dark"
+      : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    if (dark) document.documentElement.classList.add("dark");
+  } catch (e) {}
+})();
+`;
+
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={poppins.className}>
-      <body className="flex min-h-screen flex-col bg-[#fffaf7] text-gray-800 antialiased">
+    // suppressHydrationWarning: the script above may add the "dark" class
+    // before React loads, which is expected.
+    <html lang="en" className={poppins.className} suppressHydrationWarning>
+      <body className="flex min-h-screen flex-col bg-[#fffaf7] text-gray-800 antialiased dark:bg-[#12100e]">
+        {/* next/script (not a plain <script>): React 19 warns about those. */}
+        <Script
+          id="theme-init"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: themeScript }}
+        />
         <SWRProvider>
           <CartProvider>
             <Header />
