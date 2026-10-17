@@ -40,7 +40,7 @@ export default function DishCard({ dish, priority = false, compact = false }) {
 
         {/* Top right: discount */}
         {!soldOut && onSale && (
-          <span className="absolute right-3 top-3 rounded-full bg-red-500 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">
+          <span className="absolute right-3 top-3 rounded-full bg-red-500 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white shadow">
             {dish.discount}% off
           </span>
         )}
