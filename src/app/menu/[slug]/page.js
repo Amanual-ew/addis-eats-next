@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { dishes } from "@/lib/dishes";
 import { discountedPrice, hasDiscount } from "@/lib/pricing";
 import AddToCartButton from "@/components/AddToCartButton";
+import Link from "next/link";
 
 // Staff can now change prices, discounts and availability at any time, so this
 // page must be rendered on each request. (generateStaticParams was removed:
@@ -106,6 +107,9 @@ export default async function DishPage({ params }) {
   return (
     <main className="mx-auto max-w-5xl px-6 py-12">
       <div className="grid items-center gap-10 md:grid-cols-2">
+        <Link href="/menu" className="text-sm font-semibold text-[#ff6f61] transition hover:text-[#e65c50]">
+          &larr; Back to menu
+        </Link>
         <div className="relative overflow-hidden rounded-3xl shadow-xl">
           <Image
             src={dish.image}
