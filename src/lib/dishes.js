@@ -4,6 +4,7 @@ export const dishes = [
     name: "Doro Wot",
     slug: "doro-wot",
     price: 350,
+    available: false,
     category: "Ethiopian",
     description:
       "Traditional Ethiopian spicy chicken stew served with injera.",
@@ -15,6 +16,7 @@ export const dishes = [
     name: "Margherita Pizza",
     slug: "margherita-pizza",
     price: 400,
+    special: true,
     category: "Pizza",
     description:
       "Classic pizza topped with tomato sauce, mozzarella, and fresh basil.",
@@ -26,6 +28,8 @@ export const dishes = [
     name: "Shiro Wot",
     slug: "shiro-wot",
     price: 200,
+    discount: 10,
+    special: true,
     category: "Ethiopian",
     description:
       "Smooth chickpea stew cooked with Ethiopian spices.",
@@ -134,6 +138,7 @@ export const dishes = [
     name: "Tibs Combo",
     slug: "tibs-combo",
     price: 650,
+
     category: "Ethiopian",
     description:
       "A delicious combination of tender pieces of beef and traditional Ethiopian sides.",
