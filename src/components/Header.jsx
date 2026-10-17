@@ -239,9 +239,6 @@ export default function Header() {
             aria-label={`Cart, ${count} items`}
             className="group relative ml-2 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#ff6f61] to-orange-400 px-5 py-2 font-semibold text-white shadow-md shadow-orange-200 ring-1 ring-white/20 transition duration-200 hover:scale-105 hover:shadow-lg hover:shadow-orange-300 active:scale-95"
            >
-            <span className="text-base leading-none transition-transform group-hover:-rotate-12">
-              🛒
-            </span>
             <span>Cart</span>
 
             {count > 0 && (
