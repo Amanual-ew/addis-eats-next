@@ -1,11 +1,17 @@
 // src/app/orders/page.js  (REPLACE) - compact list + "find one order by ID"
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import fetcher from "@/lib/fetcher";
 import ReqiredAuth from "@/components/RequiresAuth";
+import {
+  mergeOrders,
+  saveLocalOrders,
+  useCurrentUserId,
+  useLocalOrders,
+} from "@/lib/localOrders";
 // Keyed by the status with spaces/underscores/capitals removed, so
 // "pending", "Pending", "On the way", "on_the_way" and "en_route" all work.
 const STATUS_UI = {
@@ -151,9 +157,21 @@ export default function OrdersPage() {
   });
 
   // Accept either [...] or { orders: [...] }; anything else counts as "no orders".
-  const orders = Array.isArray(data) ? data : Array.isArray(data?.orders) ? data.orders : [];
+  const serverOrders = Array.isArray(data) ? data : Array.isArray(data?.orders) ? data.orders : [];
 
-  // Single-order lookup: GET /api/orders/[id]
+  // Browser copy: every order the server has shown us is saved on this device,
+  // so it can still be opened when another Vercel server instance has no memory of it.
+  const { userId } = useCurrentUserId();
+  const { orders: localOrders } = useLocalOrders(userId);
+
+  useEffect(() => {
+    const list = Array.isArray(data) ? data : data?.orders;
+    if (Array.isArray(list)) saveLocalOrders(list);
+  }, [data]);
+
+  const orders = mergeOrders(serverOrders, localOrders);
+
+  // Single-order lookup: GET /api/orders/[id], then the browser copy
   const [query, setQuery] = useState("");
   const [lookupId, setLookupId] = useState("");
   const {
@@ -165,6 +183,10 @@ export default function OrdersPage() {
     fetchOne,
     { refreshInterval: 3000, shouldRetryOnError: false }
   );
+  const localMatch = lookupId
+    ? orders.find((o) => String(o.id) === lookupId)
+    : null;
+  const result = found ?? localMatch;
 
   function handleFind(e) {
     e.preventDefault();
@@ -205,7 +227,8 @@ export default function OrdersPage() {
     );
   }
 
-  if (error) {
+  // Only show the error screen when there is nothing to show from this device.
+  if (error && orders.length === 0) {
     return (
       <ReqiredAuth>
       <main className="min-h-screen bg-gray-50 px-4 py-6">
@@ -296,20 +319,20 @@ export default function OrdersPage() {
               </button>
             </div>
 
-            {finding && !found && (
+            {finding && !result && (
               <div className="animate-pulse rounded-xl bg-white p-4 shadow-sm">
                 <div className="mb-3 h-5 w-32 rounded bg-gray-200" />
                 <div className="h-3 w-full rounded bg-gray-200" />
               </div>
             )}
 
-            {findError && (
+            {findError && !result && (
               <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600" role="alert">
                 ❌ {findError.message}
               </p>
             )}
 
-            {found && !findError && <OrderCard order={found} />}
+            {result && <OrderCard order={result} />}
           </section>
         )}
 
