@@ -1,4 +1,4 @@
-// DishCard.jsx  (REPLACE) - same design + sold out, discount, today's special
+// src/components/DishCard.jsx
 import Image from "next/image";
 import Link from "next/link";
 import AddToCartButton from "./AddToCartButton";
@@ -6,7 +6,7 @@ import { discountedPrice, hasDiscount } from "@/lib/pricing";
 
 const etb = new Intl.NumberFormat("en-ET", { style: "currency", currency: "ETB" });
 
-// `priority` should be true only for the first 2-3 cards visible on load.
+// `priority` should be true only for the first card (the LCP image).
 // `compact` makes a smaller card (used by the home-page "Today's special").
 export default function DishCard({ dish, priority = false, compact = false }) {
   const soldOut = dish.available === false;
@@ -14,7 +14,6 @@ export default function DishCard({ dish, priority = false, compact = false }) {
   const finalPrice = discountedPrice(dish);
 
   // The cart and checkout read dish.price, so give them the discounted price.
-  // That way every total matches what the customer saw on the menu.
   const cartDish = onSale
     ? { ...dish, price: finalPrice, originalPrice: dish.price }
     : dish;
@@ -25,35 +24,33 @@ export default function DishCard({ dish, priority = false, compact = false }) {
         <Image
           src={dish.image}
           alt={dish.name}
-          // width/height only set the aspect ratio (3:2); the real size comes from `sizes`.
           width={600}
           height={400}
-          // Match your real grid: 1 column on phones, 2 on tablets, 3 on desktop,
-          // and cards never grow past ~380px inside a max-w-6xl container.
           sizes="(min-width: 1152px) 380px, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
           priority={priority}
+          
           className={`${compact ? "h-32" : "h-52"} w-full object-cover transition duration-500 group-hover:scale-110 ${
             soldOut ? "grayscale" : ""
           }`}
         />
 
+        {/* Top left: category */}
         <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-[#ff6f61] backdrop-blur">
           {dish.category}
         </span>
 
-        {!soldOut && (onSale || dish.special) && (
-          <div className="absolute right-3 top-3 flex flex-col items-end gap-2">
-            {onSale && (
-              <span className="rounded-full bg-red-500 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">
-                {dish.discount}% off
-              </span>
-            )}
-            {dish.special && (
-              <span className="rounded-full bg-[#ff6f61] px-3 py-1 text-xs font-bold text-white">
-                ★ Today&apos;s special
-              </span>
-            )}
-          </div>
+        {/* Top right: discount */}
+        {!soldOut && onSale && (
+          <span className="absolute right-3 top-3 rounded-full bg-red-500 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white shadow">
+            {dish.discount}% off
+          </span>
+        )}
+
+        {/* Bottom left: today's special */}
+        {!soldOut && dish.special && (
+          <span className="absolute bottom-3 left-3 rounded-full bg-[#ff6f61] px-3 py-1 text-xs font-bold text-white shadow">
+            ★ Today&apos;s special
+          </span>
         )}
 
         {soldOut && (

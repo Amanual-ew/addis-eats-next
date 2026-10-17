@@ -4,15 +4,16 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
-import {  useCart } from "./CartProvider";
+import { useCart } from "./CartProvider";
 import ThemeToggle from "./ThemeToggle";
+
 const fetcher = async (url) => {
   const response = await fetch(url, {
     credentials: "include",
     cache: "no-store",
     headers: { Accept: "application/json" },
   });
-  
+
   if (response.status === 401) {
     return { user: null };
   }
@@ -28,10 +29,9 @@ export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const { mutate } = useSWRConfig();
-  const {
-    cart
-  } = useCart();
+  const { cart } = useCart();
   const count = cart.map((item) => item.quantity).reduce((sum, q) => sum + q, 0);
+
   // Only fetch + render auth UI after mount so SSR and first paint match
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -47,7 +47,7 @@ export default function Header() {
       shouldRetryOnError: false,
     }
   );
-  
+
   const user = error ? null : data?.user;
   const isStaff = user?.role === "staff";
 
@@ -134,7 +134,8 @@ export default function Header() {
   ].filter(Boolean);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-orange-100 bg-white/90 backdrop-blur-md">
+    // CHANGED: solid background, no backdrop-blur (blur is expensive on phones)
+    <header className="sticky top-0 z-50 border-b border-orange-100 bg-white">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
         {/* Logo */}
         <Link href="/" className="flex shrink-0 items-center gap-2">
@@ -156,28 +157,29 @@ export default function Header() {
           </Link>
 
           <Link
-          href="/cart"
-          aria-label={`Cart, ${count} items`}
-          className="group relative ml-2 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#ff6f61] to-orange-400 px-5 py-2 font-semibold text-white shadow-md shadow-orange-200 ring-1 ring-white/20 transition duration-200 hover:scale-105 hover:shadow-lg hover:shadow-orange-300 active:scale-95"
-        >
-          <span className="text-base leading-none transition-transform group-hover:-rotate-12">
-            🛒
-          </span>
-          <span>Cart</span>
-
-          {count > 0 && (
-            <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1.5 text-[11px] font-bold tabular-nums text-[#ff6f61] shadow ring-2 ring-[#ff6f61]">
-              {count > 99 ? "99+" : count}
+            href="/cart"
+            aria-label={`Cart, ${count} items`}
+            className="group relative ml-2 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#ff6f61] to-orange-400 px-5 py-2 font-semibold text-white shadow-md shadow-orange-200 ring-1 ring-white/20 transition duration-200 hover:scale-105 hover:shadow-lg hover:shadow-orange-300 active:scale-95"
+          >
+            <span className="text-base leading-none transition-transform group-hover:-rotate-12">
+              🛒
             </span>
-          )}
-        </Link>
+            <span>Cart</span>
+
+            {count > 0 && (
+              <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1.5 text-[11px] font-bold tabular-nums text-[#ff6f61] shadow ring-2 ring-[#ff6f61]">
+                {count > 99 ? "99+" : count}
+              </span>
+            )}
+          </Link>
 
           <ThemeToggle className="ml-3" />
 
+          {/* CHANGED: placeholders are w-64, about the width of the final content */}
           {!mounted ? (
-            <div className="ml-3 h-10 w-24" />
+            <div className="ml-3 h-10 w-64" />
           ) : isLoading ? (
-            <div className="ml-3 h-10 w-24 animate-pulse rounded-lg bg-gray-100" />
+            <div className="ml-3 h-10 w-64 animate-pulse rounded-lg bg-gray-100" />
           ) : user ? (
             <details ref={desktopMenuRef} className="group relative ml-3">
               <summary className="flex cursor-pointer list-none items-center gap-2 px-2 py-2 text-gray-700 transition hover:text-[#ff6f61]">
@@ -238,7 +240,7 @@ export default function Header() {
             href="/cart"
             aria-label={`Cart, ${count} items`}
             className="group relative ml-2 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#ff6f61] to-orange-400 px-5 py-2 font-semibold text-white shadow-md shadow-orange-200 ring-1 ring-white/20 transition duration-200 hover:scale-105 hover:shadow-lg hover:shadow-orange-300 active:scale-95"
-           >
+          >
             <span>Cart</span>
 
             {count > 0 && (
@@ -247,7 +249,6 @@ export default function Header() {
               </span>
             )}
           </Link>
-
 
           <button
             type="button"
