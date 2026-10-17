@@ -132,7 +132,7 @@ export default function DishList({
       ) : (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {displayedDishes.map((dish, index) => (
-            <DishCard key={dish.id} dish={dish} priority={index < 3} />
+            <DishCard key={dish.id} dish={dish} priority={index === 0} />
           ))}
         </div>
       )}
