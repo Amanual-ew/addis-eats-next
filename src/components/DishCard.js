@@ -28,6 +28,7 @@ export default function DishCard({ dish, priority = false, compact = false }) {
           height={400}
           sizes="(min-width: 1152px) 380px, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
           priority={priority}
+          fetchPriority={priority ? "high" : undefined}
           className={`${compact ? "h-32" : "h-52"} w-full object-cover transition duration-500 group-hover:scale-110 ${
             soldOut ? "grayscale" : ""
           }`}
