@@ -106,10 +106,10 @@ export default async function DishPage({ params }) {
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-12">
-      <div className="grid items-center gap-10 md:grid-cols-2">
-        <Link href="/menu" className="text-sm font-semibold text-[#ff6f61] transition hover:text-[#e65c50]">
+       <Link href="/menu" className="text-sm font-semibold text-[#ff6f61] transition hover:text-[#e65c50]">
           &larr; Back to menu
         </Link>
+      <div className="grid items-center gap-10 md:grid-cols-2">
         <div className="relative overflow-hidden rounded-3xl shadow-xl">
           <Image
             src={dish.image}
