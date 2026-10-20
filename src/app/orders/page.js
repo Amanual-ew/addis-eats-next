@@ -1,17 +1,19 @@
-// src/app/orders/page.js  (REPLACE) - compact list + "find one order by ID"
+// src/app/orders/page.js  (REPLACE) - compact list + "find one order by ID" + CSV export
 "use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import fetcher from "@/lib/fetcher";
-import ReqiredAuth from "@/components/RequiresAuth";
+import RequiresAuth from "@/components/RequiresAuth";
+import { exportOrdersToCsv } from "@/lib/exportOrdersCsv";
 import {
   mergeOrders,
   saveLocalOrders,
   useCurrentUserId,
   useLocalOrders,
 } from "@/lib/localOrders";
+
 // Keyed by the status with spaces/underscores/capitals removed, so
 // "pending", "Pending", "On the way", "on_the_way" and "en_route" all work.
 const STATUS_UI = {
@@ -58,7 +60,6 @@ function OrderCard({ order }) {
   const ui = statusUi(order.status);
 
   return (
-    <ReqiredAuth>
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md">
       {/* Order top */}
       <div className="border-b border-gray-100 px-4 py-3">
@@ -118,7 +119,7 @@ function OrderCard({ order }) {
               <div>
                 <p className="text-sm font-medium text-gray-800">{item.name}</p>
 
-                {item.price && (
+                {item.price > 0 && (
                   <p className="text-xs text-gray-500">{item.price} ETB each</p>
                 )}
               </div>
@@ -128,7 +129,7 @@ function OrderCard({ order }) {
                   × {item.quantity ?? 1}
                 </p>
 
-                {item.price && (
+                {item.price > 0 && (
                   <p className="text-xs text-gray-500">
                     {item.price * (item.quantity ?? 1)} ETB
                   </p>
@@ -146,7 +147,6 @@ function OrderCard({ order }) {
         <span className="text-base font-bold">{total.toLocaleString()} ETB</span>
       </div>
     </div>
-    </ReqiredAuth>
   );
 }
 
@@ -199,174 +199,192 @@ export default function OrdersPage() {
     setLookupId("");
   }
 
+  function handleExport() {
+    exportOrdersToCsv(
+      orders,
+      `addis-eats-orders-${new Date().toISOString().slice(0, 10)}.csv`
+    );
+  }
+
   if (isLoading) {
     return (
-      <ReqiredAuth>
-      <main className="min-h-screen bg-gray-50 px-4 py-6">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-6">
-            <div className="h-7 w-40 animate-pulse rounded bg-gray-200" />
-            <div className="mt-2 h-3 w-60 animate-pulse rounded bg-gray-200" />
-          </div>
+      <RequiresAuth>
+        <main className="min-h-screen bg-gray-50 px-4 py-6">
+          <div className="mx-auto max-w-5xl">
+            <div className="mb-6">
+              <div className="h-7 w-40 animate-pulse rounded bg-gray-200" />
+              <div className="mt-2 h-3 w-60 animate-pulse rounded bg-gray-200" />
+            </div>
 
-          <div className="space-y-4">
-            {[1, 2].map((item) => (
-              <div
-                key={item}
-                className="animate-pulse rounded-xl bg-white p-4 shadow-sm"
-              >
-                <div className="mb-3 h-5 w-32 rounded bg-gray-200" />
-                <div className="h-3 w-full rounded bg-gray-200" />
-                <div className="mt-2 h-3 w-2/3 rounded bg-gray-200" />
-              </div>
-            ))}
+            <div className="space-y-4">
+              {[1, 2].map((item) => (
+                <div
+                  key={item}
+                  className="animate-pulse rounded-xl bg-white p-4 shadow-sm"
+                >
+                  <div className="mb-3 h-5 w-32 rounded bg-gray-200" />
+                  <div className="h-3 w-full rounded bg-gray-200" />
+                  <div className="mt-2 h-3 w-2/3 rounded bg-gray-200" />
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </main>
-      </ReqiredAuth>
+        </main>
+      </RequiresAuth>
     );
   }
 
   // Only show the error screen when there is nothing to show from this device.
   if (error && orders.length === 0) {
     return (
-      <ReqiredAuth>
-      <main className="min-h-screen bg-gray-50 px-4 py-6">
-        <div className="mx-auto max-w-5xl">
-          <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
-            <div className="mb-2 text-3xl">⚠️</div>
+      <RequiresAuth>
+        <main className="min-h-screen bg-gray-50 px-4 py-6">
+          <div className="mx-auto max-w-5xl">
+            <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
+              <div className="mb-2 text-3xl">⚠️</div>
 
-            <h1 className="text-lg font-bold text-red-700">
-              Unable to load orders
-            </h1>
+              <h1 className="text-lg font-bold text-red-700">
+                Unable to load orders
+              </h1>
 
-            <p className="mt-1 text-sm text-red-600">
-              Something went wrong while loading your orders.
-            </p>
+              <p className="mt-1 text-sm text-red-600">
+                Something went wrong while loading your orders.
+              </p>
 
-            <button
-              onClick={() => mutate()}
-              className="mt-4 rounded-lg bg-[#ff6f61] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#e65c50]"
-            >
-              Try Again
-            </button>
+              <button
+                onClick={() => mutate()}
+                className="mt-4 rounded-lg bg-[#ff6f61] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#e65c50]"
+              >
+                Try Again
+              </button>
+            </div>
           </div>
-        </div>
-      </main>
-      </ReqiredAuth>
+        </main>
+      </RequiresAuth>
     );
   }
 
   return (
-    <ReqiredAuth>
-    <main className="min-h-screen bg-gray-50 px-4 py-6">
-      <div className="mx-auto max-w-5xl">
-        {/* Header */}
-        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-[#ff6f61]">
-              Addis Eats
-            </p>
+    <RequiresAuth>
+      <main className="min-h-screen bg-gray-50 px-4 py-6">
+        <div className="mx-auto max-w-5xl">
+          {/* Header */}
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-[#ff6f61]">
+                Addis Eats
+              </p>
 
-            <h1 className="text-2xl font-bold text-gray-900">My Orders 📦</h1>
+              <h1 className="text-2xl font-bold text-gray-900">My Orders 📦</h1>
 
-            <p className="mt-1 text-sm text-gray-500">
-              Track your recent food orders and their status.
-            </p>
-          </div>
+              <p className="mt-1 text-sm text-gray-500">
+                Track your recent food orders and their status.
+              </p>
+            </div>
 
-          <button
-            onClick={() => mutate()}
-            className="w-fit rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:border-[#ff6f61] hover:text-[#ff6f61]"
-          >
-            ↻ Refresh
-          </button>
-        </div>
-
-        {/* Find one order */}
-        <form onSubmit={handleFind} className="mb-5 flex gap-2">
-          <label htmlFor="find-order" className="sr-only">
-            Find an order by ID
-          </label>
-          <input
-            id="find-order"
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Find an order by ID, e.g. ord_1791919445255"
-            autoComplete="off"
-            className="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-[#ff6f61] focus:ring-2 focus:ring-orange-200"
-          />
-          <button
-            type="submit"
-            disabled={!query.trim() || finding}
-            className="rounded-lg bg-[#ff6f61] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#e65c50] disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {finding ? "Finding..." : "Find"}
-          </button>
-        </form>
-
-        {lookupId && (
-          <section className="mb-6" aria-live="polite">
-            <div className="mb-2 flex items-center justify-between">
-              <h2 className="text-sm font-bold text-gray-900">Search result</h2>
+            <div className="flex gap-2">
+              {/* NEW: export button */}
               <button
-                type="button"
-                onClick={clearLookup}
-                className="text-xs font-semibold text-gray-500 transition hover:text-[#ff6f61]"
+                onClick={handleExport}
+                disabled={orders.length === 0}
+                className="w-fit rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:border-[#ff6f61] hover:text-[#ff6f61] disabled:cursor-not-allowed disabled:opacity-50"
               >
-                ✕ Clear
+                ⬇ Export CSV
+              </button>
+
+              <button
+                onClick={() => mutate()}
+                className="w-fit rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:border-[#ff6f61] hover:text-[#ff6f61]"
+              >
+                ↻ Refresh
               </button>
             </div>
+          </div>
 
-            {finding && !result && (
-              <div className="animate-pulse rounded-xl bg-white p-4 shadow-sm">
-                <div className="mb-3 h-5 w-32 rounded bg-gray-200" />
-                <div className="h-3 w-full rounded bg-gray-200" />
-              </div>
-            )}
-
-            {findError && !result && (
-              <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600" role="alert">
-                ❌ {findError.message}
-              </p>
-            )}
-
-            {result && <OrderCard order={result} />}
-          </section>
-        )}
-
-        {/* Empty state */}
-        {orders.length === 0 ? (
-          <div className="rounded-xl border border-gray-200 bg-white px-5 py-10 text-center shadow-sm">
-            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-orange-50 text-3xl">
-              🍽️
-            </div>
-
-            <h2 className="text-lg font-bold text-gray-900">No orders yet</h2>
-
-            <p className="mx-auto mt-1 max-w-sm text-sm text-gray-500">
-              You haven't placed an order yet. Browse our menu and
-              discover something delicious.
-            </p>
-
-            <Link
-              href="/menu"
-              className="mt-4 inline-block rounded-full bg-gradient-to-r from-[#ff6f61] to-orange-400 px-6 py-2 text-sm font-semibold text-white shadow-md shadow-orange-200 transition hover:scale-105 active:scale-95"
+          {/* Find one order */}
+          <form onSubmit={handleFind} className="mb-5 flex gap-2">
+            <label htmlFor="find-order" className="sr-only">
+              Find an order by ID
+            </label>
+            <input
+              id="find-order"
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Find an order by ID, e.g. ord_1791919445255"
+              autoComplete="off"
+              className="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-[#ff6f61] focus:ring-2 focus:ring-orange-200"
+            />
+            <button
+              type="submit"
+              disabled={!query.trim() || finding}
+              className="rounded-lg bg-[#ff6f61] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#e65c50] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Browse Menu 🍴
-            </Link>
-          </div>
-        ) : (
-          /* Orders */
-          <div className="space-y-4">
-            {orders.map((order) => (
-              <OrderCard key={order.id} order={order} />
-            ))}
-          </div>
-        )}
-      </div>
-    </main>
-    </ReqiredAuth>
+              {finding ? "Finding..." : "Find"}
+            </button>
+          </form>
+
+          {lookupId && (
+            <section className="mb-6" aria-live="polite">
+              <div className="mb-2 flex items-center justify-between">
+                <h2 className="text-sm font-bold text-gray-900">Search result</h2>
+                <button
+                  type="button"
+                  onClick={clearLookup}
+                  className="text-xs font-semibold text-gray-500 transition hover:text-[#ff6f61]"
+                >
+                  ✕ Clear
+                </button>
+              </div>
+
+              {finding && !result && (
+                <div className="animate-pulse rounded-xl bg-white p-4 shadow-sm">
+                  <div className="mb-3 h-5 w-32 rounded bg-gray-200" />
+                  <div className="h-3 w-full rounded bg-gray-200" />
+                </div>
+              )}
+
+              {findError && !result && (
+                <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600" role="alert">
+                  ❌ {findError.message}
+                </p>
+              )}
+
+              {result && <OrderCard order={result} />}
+            </section>
+          )}
+
+          {/* Empty state */}
+          {orders.length === 0 ? (
+            <div className="rounded-xl border border-gray-200 bg-white px-5 py-10 text-center shadow-sm">
+              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-orange-50 text-3xl">
+                🍽️
+              </div>
+
+              <h2 className="text-lg font-bold text-gray-900">No orders yet</h2>
+
+              <p className="mx-auto mt-1 max-w-sm text-sm text-gray-500">
+                You haven&apos;t placed an order yet. Browse our menu and
+                discover something delicious.
+              </p>
+
+              <Link
+                href="/menu"
+                className="mt-4 inline-block rounded-full bg-gradient-to-r from-[#ff6f61] to-orange-400 px-6 py-2 text-sm font-semibold text-white shadow-md shadow-orange-200 transition hover:scale-105 active:scale-95"
+              >
+                Browse Menu 🍴
+              </Link>
+            </div>
+          ) : (
+            /* Orders */
+            <div className="space-y-4">
+              {orders.map((order) => (
+                <OrderCard key={order.id} order={order} />
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+    </RequiresAuth>
   );
 }
