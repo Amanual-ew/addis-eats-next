@@ -19,7 +19,7 @@ export default function DishCard({ dish, priority = false, compact = false }) {
     : dish;
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-3xl border border-orange-100 bg-white shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-xl">
+    <article className="group flex flex-col overflow-hidden rounded-3xl border border-orange-100 bg-white shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-xl motion-reduce:transition-none motion-reduce:hover:translate-y-0">
       <div className="relative overflow-hidden">
         <Image
           src={dish.image}
@@ -28,14 +28,15 @@ export default function DishCard({ dish, priority = false, compact = false }) {
           height={400}
           sizes="(min-width: 1152px) 380px, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
           priority={priority}
-          
-          className={`${compact ? "h-32" : "h-52"} w-full object-cover transition duration-500 group-hover:scale-110 ${
+          className={`${
+            compact ? "h-32" : "h-40 sm:h-52"
+          } w-full object-cover transition duration-500 group-hover:scale-110 motion-reduce:transition-none motion-reduce:group-hover:scale-100 ${
             soldOut ? "grayscale" : ""
           }`}
         />
 
-        {/* Top left: category */}
-        <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-[#ff6f61] backdrop-blur">
+        {/* Top left: category (dark chip with white text, readable on any photo and in both themes) */}
+        <span className="absolute left-3 top-3 rounded-full bg-black/60 px-3 py-1 text-xs font-semibold text-white backdrop-blur">
           {dish.category}
         </span>
 
@@ -54,20 +55,24 @@ export default function DishCard({ dish, priority = false, compact = false }) {
         )}
 
         {soldOut && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/45">
-            <span className="rounded-full bg-white px-4 py-1 text-sm font-bold text-gray-900">
+          <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+            <span className="rounded-full bg-black/75 px-4 py-1 text-sm font-bold text-white ring-1 ring-white/30">
               Sold out
             </span>
           </div>
         )}
       </div>
 
-      <div className={`flex flex-1 flex-col gap-2 ${compact ? "p-3" : "p-5"}`}>
+      <div className={`flex flex-1 flex-col gap-2 ${compact ? "p-3" : "p-4 sm:p-5"}`}>
         <div className="flex items-start justify-between gap-3">
-          <h2 className={`font-bold text-gray-900 ${compact ? "text-base" : "text-lg"}`}>
+          <h2
+            className={`min-w-0 break-words font-bold text-gray-900 ${
+              compact ? "text-base" : "text-lg"
+            } ${soldOut ? "opacity-60" : ""}`}
+          >
             {dish.name}
           </h2>
-          <div className="flex flex-col items-end gap-0.5">
+          <div className="flex shrink-0 flex-col items-end gap-0.5">
             <strong className="whitespace-nowrap rounded-full bg-orange-50 px-3 py-1 text-sm text-[#ff6f61]">
               {etb.format(finalPrice)}
             </strong>
@@ -97,9 +102,10 @@ export default function DishCard({ dish, priority = false, compact = false }) {
             <button
               type="button"
               disabled
+              aria-disabled="true"
               className="cursor-not-allowed rounded-full bg-gray-200 px-5 py-2 text-sm font-semibold text-gray-500"
             >
-              Sold out
+              Unavailable
             </button>
           ) : (
             <AddToCartButton dish={cartDish} />
@@ -107,7 +113,7 @@ export default function DishCard({ dish, priority = false, compact = false }) {
 
           <Link
             href={`/menu/${dish.slug}`}
-            className="text-sm font-semibold text-gray-500 transition hover:text-[#ff6f61]"
+            className="py-2 text-sm font-semibold text-gray-500 transition hover:text-[#ff6f61]"
           >
             View Dish →
           </Link>

@@ -4,6 +4,19 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
+import {
+  ChefHat,
+  ChevronDown,
+  LayoutDashboard,
+  LogOut,
+  Menu as MenuIcon,
+  Package,
+  ShoppingCart,
+  User,
+  Utensils,
+  UtensilsCrossed,
+  X,
+} from "lucide-react";
 import { useCart } from "./CartProvider";
 import ThemeToggle from "./ThemeToggle";
 
@@ -25,16 +38,48 @@ const fetcher = async (url) => {
   return response.json();
 };
 
+// One cart link for desktop + mobile. Mobile = compact icon button, desktop = icon + label.
+function CartLink({ count, variant }) {
+  const label = `Cart, ${count} ${count === 1 ? "item" : "items"}`;
+  const size =
+    variant === "mobile"
+      ? "h-10 w-10 justify-center"
+      : "ml-2 gap-2 px-5 py-2";
+
+  return (
+    <Link
+      href="/cart"
+      aria-label={label}
+      className={`relative inline-flex shrink-0 items-center rounded-full bg-gradient-to-r from-[#ff6f61] to-orange-400 font-semibold text-white shadow-sm transition duration-200 hover:shadow-md active:scale-95 ${size}`}
+    >
+      <ShoppingCart className="h-5 w-5" aria-hidden="true" />
+      {variant === "desktop" && <span>Cart</span>}
+
+      {count > 0 && (
+        <span
+          aria-hidden="true"
+          className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1.5 text-[11px] font-bold tabular-nums text-[#ff6f61] shadow ring-2 ring-[#ff6f61]"
+        >
+          {count > 99 ? "99+" : count}
+        </span>
+      )}
+    </Link>
+  );
+}
+
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const { mutate } = useSWRConfig();
   const { cart } = useCart();
-  const count = cart.map((item) => item.quantity).reduce((sum, q) => sum + q, 0);
+  const rawCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   // Only fetch + render auth UI after mount so SSR and first paint match
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
+  // The cart count also waits for mount (it may come from browser storage)
+  const count = mounted ? rawCount : 0;
 
   const [menuOpen, setMenuOpen] = useState(false);
   const desktopMenuRef = useRef(null);
@@ -116,31 +161,31 @@ export default function Header() {
     }`;
 
   const mobileLink = (href) =>
-    `block rounded-lg px-4 py-3 text-base font-semibold transition-colors ${
+    `flex items-center gap-3 rounded-lg px-4 py-3 text-base font-semibold transition-colors ${
       pathname === href
         ? "bg-orange-50 text-[#ff6f61]"
         : "text-gray-700 hover:bg-orange-50 hover:text-[#ff6f61]"
     }`;
 
   const dropdownItem =
-    "block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-[#ff6f61]";
+    "flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-[#ff6f61]";
 
   // Role-based account links, shared by desktop dropdown + mobile panel
   const accountLinks = [
-    !isStaff && { href: "/orders", label: "📦 My Orders" },
-    isStaff && { href: "/dashboard", label: "📊 Dashboard" },
-    isStaff && { href: "/staff/menu", label: "🍽️ Manage menu" },
-    isStaff && { href: "/kitchen", label: "👨‍🍳 Kitchen" },
+    !isStaff && { href: "/orders", label: "My Orders", Icon: Package },
+    isStaff && { href: "/dashboard", label: "Dashboard", Icon: LayoutDashboard },
+    isStaff && { href: "/staff/menu", label: "Manage menu", Icon: Utensils },
+    isStaff && { href: "/kitchen", label: "Kitchen", Icon: ChefHat },
   ].filter(Boolean);
 
   return (
-    // CHANGED: solid background, no backdrop-blur (blur is expensive on phones)
+    // Solid background, no backdrop-blur (blur is expensive on phones)
     <header className="sticky top-0 z-50 border-b border-orange-100 bg-white">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
         {/* Logo */}
         <Link href="/" className="flex shrink-0 items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#ff6f61] to-orange-400 text-lg shadow-md sm:h-10 sm:w-10 sm:text-xl">
-            🍴
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#ff6f61] to-orange-400 text-white shadow-md sm:h-10 sm:w-10">
+            <UtensilsCrossed className="h-5 w-5" aria-hidden="true" />
           </span>
           <span className="text-lg font-extrabold tracking-tight text-gray-900 sm:text-xl">
             Addis<span className="text-[#ff6f61]">Eats</span>
@@ -156,26 +201,11 @@ export default function Header() {
             Menu
           </Link>
 
-          <Link
-            href="/cart"
-            aria-label={`Cart, ${count} items`}
-            className="group relative ml-2 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#ff6f61] to-orange-400 px-5 py-2 font-semibold text-white shadow-md shadow-orange-200 ring-1 ring-white/20 transition duration-200 hover:scale-105 hover:shadow-lg hover:shadow-orange-300 active:scale-95"
-          >
-            <span className="text-base leading-none transition-transform group-hover:-rotate-12">
-              🛒
-            </span>
-            <span>Cart</span>
-
-            {count > 0 && (
-              <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1.5 text-[11px] font-bold tabular-nums text-[#ff6f61] shadow ring-2 ring-[#ff6f61]">
-                {count > 99 ? "99+" : count}
-              </span>
-            )}
-          </Link>
+          <CartLink count={count} variant="desktop" />
 
           <ThemeToggle className="ml-3" />
 
-          {/* CHANGED: placeholders are w-64, about the width of the final content */}
+          {/* Placeholders are w-64, about the width of the final content */}
           {!mounted ? (
             <div className="ml-3 h-10 w-64" />
           ) : isLoading ? (
@@ -183,11 +213,12 @@ export default function Header() {
           ) : user ? (
             <details ref={desktopMenuRef} className="group relative ml-3">
               <summary className="flex cursor-pointer list-none items-center gap-2 px-2 py-2 text-gray-700 transition hover:text-[#ff6f61]">
-                <span className="text-lg">👤</span>
+                <User className="h-5 w-5" aria-hidden="true" />
                 <span className="max-w-24 truncate">{user.name}</span>
-                <span className="text-xs text-gray-400 transition-transform group-open:rotate-180">
-                  ▼
-                </span>
+                <ChevronDown
+                  className="h-4 w-4 text-gray-400 transition-transform group-open:rotate-180"
+                  aria-hidden="true"
+                />
               </summary>
 
               <div className="absolute right-0 mt-2 w-56 rounded-xl bg-white p-2 shadow-xl ring-1 ring-gray-100">
@@ -198,9 +229,10 @@ export default function Header() {
                   </p>
                 </div>
 
-                {accountLinks.map((l) => (
-                  <Link key={l.href} href={l.href} className={dropdownItem}>
-                    {l.label}
+                {accountLinks.map(({ href, label, Icon }) => (
+                  <Link key={href} href={href} className={dropdownItem}>
+                    <Icon className="h-4 w-4" aria-hidden="true" />
+                    {label}
                   </Link>
                 ))}
 
@@ -208,9 +240,10 @@ export default function Header() {
 
                 <button
                   onClick={handleSignOut}
-                  className="w-full rounded-lg px-3 py-2 text-left text-sm text-red-500 hover:bg-red-50"
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-500 hover:bg-red-50"
                 >
-                  🚪 Sign out
+                  <LogOut className="h-4 w-4" aria-hidden="true" />
+                  Sign out
                 </button>
               </div>
             </details>
@@ -232,23 +265,11 @@ export default function Header() {
           )}
         </div>
 
-        {/* Mobile: cart + hamburger */}
+        {/* Mobile: theme + cart + hamburger */}
         <div className="flex items-center gap-2 md:hidden">
           <ThemeToggle />
 
-          <Link
-            href="/cart"
-            aria-label={`Cart, ${count} items`}
-            className="group relative ml-2 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#ff6f61] to-orange-400 px-5 py-2 font-semibold text-white shadow-md shadow-orange-200 ring-1 ring-white/20 transition duration-200 hover:scale-105 hover:shadow-lg hover:shadow-orange-300 active:scale-95"
-          >
-            <span>Cart</span>
-
-            {count > 0 && (
-              <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1.5 text-[11px] font-bold tabular-nums text-[#ff6f61] shadow ring-2 ring-[#ff6f61]">
-                {count > 99 ? "99+" : count}
-              </span>
-            )}
-          </Link>
+          <CartLink count={count} variant="mobile" />
 
           <button
             type="button"
@@ -256,23 +277,14 @@ export default function Header() {
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
             aria-controls="mobile-menu"
+            aria-haspopup="true"
             className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 transition hover:bg-orange-50 hover:text-[#ff6f61]"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              className="h-6 w-6"
-            >
-              {menuOpen ? (
-                <path d="M6 6l12 12M18 6L6 18" />
-              ) : (
-                <path d="M4 7h16M4 12h16M4 17h16" />
-              )}
-            </svg>
+            {menuOpen ? (
+              <X className="h-6 w-6" aria-hidden="true" />
+            ) : (
+              <MenuIcon className="h-6 w-6" aria-hidden="true" />
+            )}
           </button>
         </div>
       </nav>
@@ -280,7 +292,7 @@ export default function Header() {
       {/* Mobile menu panel */}
       <div
         id="mobile-menu"
-        className={`md:hidden ${menuOpen ? "block" : "hidden"} max-h-[calc(100vh-4rem)] overflow-y-auto border-t border-orange-100 bg-white px-4 pb-4 pt-2 shadow-lg`}
+        className={`md:hidden ${menuOpen ? "block" : "hidden"} max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-orange-100 bg-white px-4 pb-4 pt-2 shadow-lg`}
       >
         <Link href="/" className={mobileLink("/")}>
           Home
@@ -296,23 +308,28 @@ export default function Header() {
         ) : user ? (
           <>
             <div className="px-4 py-2">
-              <p className="truncate font-bold text-gray-900">👤 {user.name}</p>
+              <p className="flex items-center gap-2 truncate font-bold text-gray-900">
+                <User className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span className="truncate">{user.name}</span>
+              </p>
               <p className="text-xs capitalize text-[#ff6f61]">
                 {user.role} account
               </p>
             </div>
 
-            {accountLinks.map((l) => (
-              <Link key={l.href} href={l.href} className={mobileLink(l.href)}>
-                {l.label}
+            {accountLinks.map(({ href, label, Icon }) => (
+              <Link key={href} href={href} className={mobileLink(href)}>
+                <Icon className="h-5 w-5" aria-hidden="true" />
+                {label}
               </Link>
             ))}
 
             <button
               onClick={handleSignOut}
-              className="mt-1 w-full rounded-lg px-4 py-3 text-left text-base font-semibold text-red-500 hover:bg-red-50"
+              className="mt-1 flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-base font-semibold text-red-500 hover:bg-red-50"
             >
-              🚪 Sign out
+              <LogOut className="h-5 w-5" aria-hidden="true" />
+              Sign out
             </button>
           </>
         ) : (

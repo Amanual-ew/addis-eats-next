@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import useSWR from "swr";
+import { Search, SearchX, X } from "lucide-react";
 import DishCard from "./DishCard";
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
@@ -76,16 +77,38 @@ export default function DishList({
     revalidateOnMount: hasServerData ? false : undefined,
   });
 
+  // Clear instantly (no 500ms wait)
+  function clearSearch() {
+    setSearch("");
+    setDebouncedSearch("");
+  }
+
   const searchBox = (
-    <div className="relative mx-auto mb-8 max-w-xl">
-      <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+    <div className="relative mx-auto mb-6 max-w-xl">
+      <Search
+        className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
+        aria-hidden="true"
+      />
       <input
         type="text"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Search dishes..."
-        className="w-full rounded-full border border-orange-100 bg-white py-3 pl-12 pr-5 shadow-sm outline-none transition focus:border-[#ff6f61] focus:ring-2 focus:ring-orange-200"
+        aria-label="Search dishes"
+        enterKeyHint="search"
+        autoComplete="off"
+        className="w-full rounded-full border border-orange-100 bg-white py-3 pl-12 pr-12 text-base shadow-sm outline-none transition focus:border-[#ff6f61] focus:ring-2 focus:ring-orange-200"
       />
+      {search && (
+        <button
+          type="button"
+          onClick={clearSearch}
+          aria-label="Clear search"
+          className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 transition hover:bg-orange-50 hover:text-[#ff6f61]"
+        >
+          <X className="h-5 w-5" aria-hidden="true" />
+        </button>
+      )}
     </div>
   );
 
@@ -93,9 +116,15 @@ export default function DishList({
     return (
       <div>
         {searchBox}
-        <p className="rounded-xl bg-red-50 px-4 py-3 text-center text-red-600">
-          Failed to load dishes.
-        </p>
+        <div className="rounded-xl bg-red-50 px-4 py-4 text-center" role="alert">
+          <p className="text-red-600">Failed to load dishes.</p>
+          <button
+            onClick={() => mutate()}
+            className="mt-3 rounded-full bg-[#ff6f61] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#e65c50]"
+          >
+            Try again
+          </button>
+        </div>
       </div>
     );
   }
@@ -121,13 +150,37 @@ export default function DishList({
       {searchBox}
 
       {/* Always takes space, so the grid never moves down */}
-      <p className="mb-4 h-5 text-center text-sm text-gray-500">
+      <p
+        className="mb-4 h-5 text-center text-sm text-gray-500"
+        aria-live="polite"
+      >
         {isValidating ? "Updating menu..." : ""}
       </p>
 
       {displayedDishes.length === 0 ? (
-        <div className="rounded-3xl border border-orange-100 bg-white p-12 text-center text-gray-500 shadow-sm">
-          No dishes found 😕
+        <div className="rounded-3xl border border-orange-100 bg-white px-6 py-12 text-center shadow-sm">
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-orange-50">
+            <SearchX className="h-7 w-7 text-[#ff6f61]" aria-hidden="true" />
+          </div>
+
+          <h2 className="text-lg font-bold text-gray-900">No dishes found</h2>
+
+          <p className="mx-auto mt-1 max-w-sm break-words text-sm text-gray-500">
+            {urlSearch
+              ? `Nothing matches "${urlSearch}"${
+                  category !== "All" ? ` in ${category}` : ""
+                }. Try a different word.`
+              : "There are no dishes in this category right now."}
+          </p>
+
+          {urlSearch && (
+            <button
+              onClick={clearSearch}
+              className="mt-4 rounded-full border-2 border-[#ff6f61] px-5 py-2 text-sm font-semibold text-[#ff6f61] transition hover:bg-[#ff6f61] hover:text-white active:scale-95"
+            >
+              Clear search
+            </button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -138,23 +191,23 @@ export default function DishList({
       )}
 
       {data && data.totalPages > 1 && (
-        <div className="mt-10 flex items-center justify-center gap-4">
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
           <button
             onClick={() => goTo(page - 1)}
             disabled={page === 1}
-            className="rounded-full border border-orange-100 bg-white px-6 py-2 font-medium text-gray-700 transition hover:bg-orange-50 hover:text-[#ff6f61] disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-full border border-orange-100 bg-white px-4 py-2 font-medium text-gray-700 transition hover:bg-orange-50 hover:text-[#ff6f61] disabled:cursor-not-allowed disabled:opacity-40 sm:px-6"
           >
             ← Previous
           </button>
 
-          <span className="font-semibold text-gray-700">
+          <span className="text-sm font-semibold text-gray-700 sm:text-base">
             Page {page} of {data.totalPages}
           </span>
 
           <button
             onClick={() => goTo(page + 1)}
             disabled={page >= data.totalPages}
-            className="rounded-full bg-gradient-to-r from-[#ff6f61] to-orange-400 px-6 py-2 font-semibold text-white shadow-md shadow-orange-200 transition hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
+            className="rounded-full bg-gradient-to-r from-[#ff6f61] to-orange-400 px-4 py-2 font-semibold text-white shadow-md shadow-orange-200 transition hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100 sm:px-6"
           >
             Next →
           </button>
