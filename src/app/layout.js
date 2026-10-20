@@ -1,10 +1,10 @@
 import "./globals.css";
 import Script from "next/script";
-import { Poppins  } from "next/font/google";
+import { Poppins } from "next/font/google";
 import { CartProvider } from "../components/CartProvider";
 import SWRProvider from "../components/SWRProvider";
 import Header from "../components/Header";
-
+import Footer from "../components/Footer";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -40,6 +40,14 @@ export const metadata = {
   },
 };
 
+// Colors the phone's address bar to match the page
+export const viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fffaf7" },
+    { media: "(prefers-color-scheme: dark)", color: "#12100e" },
+  ],
+};
+
 // Runs before the page paints, so dark-mode visitors never see a white flash.
 // Uses the saved choice, or the device setting on the first visit.
 const themeScript = `
@@ -66,19 +74,22 @@ export default function RootLayout({ children }) {
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: themeScript }}
         />
+
+        {/* Keyboard users can jump straight past the header */}
+        <a
+          href="#content"
+          className="sr-only z-[60] rounded-lg bg-[#ff6f61] px-4 py-2 font-semibold text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+        >
+          Skip to content
+        </a>
+
         <SWRProvider>
           <CartProvider>
             <Header />
-            <div className="flex-1">{children}</div>
-            <footer className="mt-16 border-t border-orange-100 bg-white">
-              <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-6 py-8 text-sm text-gray-500 sm:flex-row">
-                <p className="font-bold text-gray-900">
-                  🍴 Addis<span className="text-[#ff6f61]">Eats</span>
-                </p>
-                <p>Fresh Ethiopian food, delivered with love.</p>
-                <p>© 2026 Addis Eats</p>
-              </div>
-            </footer>
+            <div id="content" className="flex-1">
+              {children}
+            </div>
+            <Footer />
           </CartProvider>
         </SWRProvider>
       </body>
