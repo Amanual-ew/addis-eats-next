@@ -1,5 +1,7 @@
 "use client";
 
+import { Moon, Sun } from "lucide-react";
+
 // Sun/moon button. The icon is picked by CSS (the dark: prefix), so it is
 // correct from the first paint and needs no state or hydration tricks.
 export default function ThemeToggle({ className = "" }) {
@@ -18,10 +20,10 @@ export default function ThemeToggle({ className = "" }) {
       onClick={toggle}
       aria-label="Toggle dark mode"
       title="Toggle dark mode"
-      className={`flex h-10 w-10 items-center justify-center rounded-full border border-orange-100 bg-white text-lg transition hover:bg-orange-50 active:scale-95 ${className}`}
+      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-orange-100 bg-white text-gray-700 transition hover:bg-orange-50 hover:text-[#ff6f61] active:scale-95 ${className}`}
     >
-      <span aria-hidden="true" className="dark:hidden">🌙</span>
-      <span aria-hidden="true" className="hidden dark:inline">☀️</span>
+      <Moon className="h-5 w-5 dark:hidden" aria-hidden="true" />
+      <Sun className="hidden h-5 w-5 dark:block" aria-hidden="true" />
     </button>
   );
 }
